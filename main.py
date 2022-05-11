@@ -25,7 +25,7 @@ def check_for_redirect(response: requests.models.Response) -> None:
         raise requests.HTTPError
 
 
-def download_txt(url: str, filename: str, folder: str='books/') -> str:
+def download_txt(url: str, filename: str, folder: str = 'books/') -> str:
     """Функция для скачивания текстовых файлов.
     Args:
         url (str): Cсылка на текст, который хочется скачать.
@@ -55,7 +55,7 @@ def get_filename_and_file_extension(url: str) -> Tuple[str, str]:
     return filename, file_extension
 
 
-def download_image(url: str, filename: str, folder: str='images/') -> str:
+def download_image(url: str, filename: str, folder: str = 'images/') -> str:
     """Функция для скачивания изображений"""
     path_to_download = os.path.join(folder, str(filename))
 
@@ -68,36 +68,49 @@ def download_image(url: str, filename: str, folder: str='images/') -> str:
     return f"{path_to_download}.txt"
 
 
-def get_book_info(book_id: int) -> Tuple[str, str, str, list, list]:
-    """Получаем название, автора и ссылку на фото, список комментариев, список жанров книги"""
-    url = f'https://tululu.org/b{book_id}/'
+def parse_book_page(content) -> dict:
+    """Возвращаем словарь с данными о книге: название, автор, ссылка на фото, список комментариев, список жанров"""
+    title_tag = content.find('h1')
+    book_title, book_author = [text.strip() for text in title_tag.text.strip().split("::")]
 
-    response = get_request(url)
-
-    soup = BeautifulSoup(response.text, 'lxml')
-    title_tag = soup.find('h1')
     all_comments = []
     all_genres = []
-    genres = soup.find('span', class_='d_book').find_all('a')
-    for genre in genres:
+    genre_tag = content.find('span', class_='d_book').find_all('a')
+    for genre in genre_tag:
         all_genres.append(genre.text)
-    comments = soup.find_all('div', class_='texts')
-    for comment in comments:
+    comment_tag = content.find_all('div', class_='texts')
+    for comment in comment_tag:
         all_comments.append(comment.find('span').text)
-    book_image = soup.find('div', class_='bookimage').find('img')['src']
+
+    book_image = content.find('div', class_='bookimage').find('img')['src']
     book_image = urljoin('https://tululu.org/', book_image)
-    title, author = [text.strip() for text in title_tag.text.strip().split("::")]
-    return title, author, book_image, all_comments, all_genres
+
+    book_info = {
+        'title': book_title,
+        'author': book_author,
+        'image': book_image,
+        'genres': all_genres,
+        'comments': all_comments
+    }
+    return book_info
+
+
+def get_book_info(book_id: int) -> dict:
+    """Парсим страницу книги и вовзращаем словарь с данными о книге"""
+    url = f'https://tululu.org/b{book_id}/'
+    response = get_request(url)
+    soup = BeautifulSoup(response.text, 'lxml')
+    return parse_book_page(soup)
 
 
 for book_id in range(1, 11):
     url = f"https://tululu.org/txt.php?id={book_id}"
     try:
-        title, author, image, comments, genres = get_book_info(book_id)
+        book_info = get_book_info(book_id)
         # download_txt(url, f"{book_id}. {title}")
         # filename = get_filename_and_file_extension(image)[0]
         # download_image(image, filename)
-        print(title)
-        print(genres)
+        print(book_info.get('title'))
+        print(book_info.get('genres'))
     except requests.exceptions.HTTPError:
         continue
