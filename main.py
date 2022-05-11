@@ -68,8 +68,8 @@ def download_image(url: str, filename: str, folder: str='images/') -> str:
     return f"{path_to_download}.txt"
 
 
-def get_book_info(book_id: int) -> Tuple[str, str, str, list]:
-    """Получаем название, автора и ссылку на книгу"""
+def get_book_info(book_id: int) -> Tuple[str, str, str, list, list]:
+    """Получаем название, автора и ссылку на фото, список комментариев, список жанров книги"""
     url = f'https://tululu.org/b{book_id}/'
 
     response = get_request(url)
@@ -77,23 +77,27 @@ def get_book_info(book_id: int) -> Tuple[str, str, str, list]:
     soup = BeautifulSoup(response.text, 'lxml')
     title_tag = soup.find('h1')
     all_comments = []
+    all_genres = []
+    genres = soup.find('span', class_='d_book').find_all('a')
+    for genre in genres:
+        all_genres.append(genre.text)
     comments = soup.find_all('div', class_='texts')
     for comment in comments:
         all_comments.append(comment.find('span').text)
     book_image = soup.find('div', class_='bookimage').find('img')['src']
     book_image = urljoin('https://tululu.org/', book_image)
     title, author = [text.strip() for text in title_tag.text.strip().split("::")]
-    return title, author, book_image, all_comments
+    return title, author, book_image, all_comments, all_genres
 
 
 for book_id in range(1, 11):
     url = f"https://tululu.org/txt.php?id={book_id}"
     try:
-        title, author, image, comments = get_book_info(book_id)
+        title, author, image, comments, genres = get_book_info(book_id)
         # download_txt(url, f"{book_id}. {title}")
         # filename = get_filename_and_file_extension(image)[0]
         # download_image(image, filename)
         print(title)
-        print(*comments, sep='\n')
+        print(genres)
     except requests.exceptions.HTTPError:
         continue
