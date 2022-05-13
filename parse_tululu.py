@@ -3,9 +3,10 @@ import os
 from pathlib import Path
 from typing import Tuple
 from urllib.parse import urljoin, urlsplit, unquote_plus
-from loguru import logger
+
 import requests
 from bs4 import BeautifulSoup
+from loguru import logger
 from pathvalidate import is_valid_filename, sanitize_filename
 from retry import retry
 
@@ -72,7 +73,7 @@ def download_image(url: str, folder: str = 'images/') -> str:
     return full_path_to_download
 
 
-def parse_book_page(content) -> dict:
+def parse_book_page(content, url: str) -> dict:
     """Возвращаем словарь с данными о книге: название, автор, ссылка на фото, список комментариев, список жанров"""
     title_tag = content.find('h1')
     book_title, book_author = [text.strip() for text in title_tag.text.strip().split("::")]
@@ -81,7 +82,7 @@ def parse_book_page(content) -> dict:
     all_genres = [genre.text for genre in content.find('span', class_='d_book').find_all('a')]
 
     book_image = content.find('div', class_='bookimage').find('img')['src']
-    book_image = urljoin('https://tululu.org/', book_image)
+    book_image = urljoin(url, f"../{book_image}")
 
     book_info = {
         'title': book_title,
@@ -103,7 +104,7 @@ def get_book_info(book_id: int) -> dict:
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, 'lxml')
-    return parse_book_page(soup)
+    return parse_book_page(soup, url)
 
 
 def main():
@@ -127,11 +128,11 @@ def main():
         payload = {"id": book_id}
         try:
             book_info = get_book_info(book_id)
-            logger.info(f'book_id={start}. Получили book_info')
+            logger.info(f'book_id={book_id}. Получили book_info')
             download_txt(book_url, payload, f"{book_id}. {book_info.get('title')}")
-            logger.info(f'book_id={start}. Скачали книгу')
+            logger.info(f'book_id={book_id}. Скачали книгу')
             download_image(book_info.get('image'))
-            logger.info(f'book_id={start}. Скачали изображение')
+            logger.info(f'book_id={book_id}. Скачали изображение')
             print("Название:", book_info.get('title'))
             print("Автор:", book_info.get('author'))
         except requests.exceptions.HTTPError:
