@@ -9,14 +9,6 @@ from bs4 import BeautifulSoup
 from pathvalidate import is_valid_filename, sanitize_filename
 
 
-def get_request(url) -> requests.models.Response:
-    """Отправляем запрос"""
-    response = requests.get(url)
-    check_for_redirect(response)
-    response.raise_for_status()
-    return response
-
-
 def check_for_redirect(response: requests.models.Response) -> None:
     """Проверяем ссылку на редирект"""
     if response.history:
