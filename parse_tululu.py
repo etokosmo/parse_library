@@ -76,14 +76,8 @@ def parse_book_page(content) -> dict:
     title_tag = content.find('h1')
     book_title, book_author = [text.strip() for text in title_tag.text.strip().split("::")]
 
-    all_comments = []
-    all_genres = []
-    genre_tag = content.find('span', class_='d_book').find_all('a')
-    for genre in genre_tag:
-        all_genres.append(genre.text)
-    comment_tag = content.find_all('div', class_='texts')
-    for comment in comment_tag:
-        all_comments.append(comment.find('span').text)
+    all_comments = [comment.find('span').text for comment in content.find_all('div', class_='texts')]
+    all_genres = [genre.text for genre in content.find('span', class_='d_book').find_all('a')]
 
     book_image = content.find('div', class_='bookimage').find('img')['src']
     book_image = urljoin('https://tululu.org/', book_image)
