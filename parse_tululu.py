@@ -7,6 +7,7 @@ from urllib.parse import urljoin, urlsplit, unquote_plus
 import requests
 from bs4 import BeautifulSoup
 from pathvalidate import is_valid_filename, sanitize_filename
+from retry import retry
 
 
 def check_for_redirect(response: requests.models.Response) -> None:
@@ -15,6 +16,7 @@ def check_for_redirect(response: requests.models.Response) -> None:
         raise requests.HTTPError
 
 
+@retry(requests.exceptions.ConnectionError, tries=3, delay=10)
 def download_txt(url: str, params: dict, filename: str, folder: str = 'books/') -> str:
     """Функция для скачивания текстовых файлов.
     Args:
@@ -48,6 +50,7 @@ def get_filename_and_file_extension(url: str) -> Tuple[str, str]:
     return filename, file_extension
 
 
+@retry(requests.exceptions.ConnectionError, tries=3, delay=10)
 def download_image(url: str, folder: str = 'images/') -> str:
     """Функция для скачивания изображений"""
     filename, file_extension = get_filename_and_file_extension(url)
@@ -86,6 +89,7 @@ def parse_book_page(content) -> dict:
     return book_info
 
 
+@retry(requests.exceptions.ConnectionError, tries=3, delay=10)
 def get_book_info(book_id: int) -> dict:
     """Парсим страницу книги и вовзращаем словарь с данными о книге"""
     url = f'https://tululu.org/b{book_id}/'
@@ -123,6 +127,8 @@ def main():
             print("Автор:", book_info.get('author'))
         except requests.exceptions.HTTPError:
             continue
+        except requests.exceptions.ConnectionError:
+            print("Потеряно соединение...")
 
 
 if __name__ == "__main__":
