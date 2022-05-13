@@ -3,11 +3,14 @@ import os
 from pathlib import Path
 from typing import Tuple
 from urllib.parse import urljoin, urlsplit, unquote_plus
-
+from loguru import logger
 import requests
 from bs4 import BeautifulSoup
 from pathvalidate import is_valid_filename, sanitize_filename
 from retry import retry
+
+BASE_DIR = os.path.dirname(__file__) or '.'
+PATH_TO_LOGS = os.path.join(BASE_DIR, 'logs', 'logs.log')
 
 
 def check_for_redirect(response: requests.models.Response) -> None:
@@ -21,6 +24,7 @@ def download_txt(url: str, params: dict, filename: str, folder: str = 'books/') 
     """Функция для скачивания текстовых файлов.
     Args:
         url (str): Cсылка на текст, который хочется скачать.
+        params (dict): Параметры для GET запроса.
         filename (str): Имя файла, с которым сохранять.
         folder (str): Папка, куда сохранять.
     Returns:
@@ -103,32 +107,40 @@ def get_book_info(book_id: int) -> dict:
 
 
 def main():
+    logger.add(PATH_TO_LOGS, level='DEBUG')
     parser = argparse.ArgumentParser(
         description='Скрипт для скачивания книг'
     )
     parser.add_argument('--start_id', help='С какой страницы начать скачивание', type=int, default=1)
     parser.add_argument('--end_id', help='На какой странице закончить скачивание', type=int, default=2)
     args = parser.parse_args()
+    logger.info(f'Прием аргументов: start_id={args.start_id}, end_id={args.end_id}')
     start = args.start_id
     if start < 1:
         start = 1
     end = args.end_id
     if end <= start:
         end = start + 1
-
+    logger.info(f'Аргументы после обработки: start_id={start}, end_id={end}')
     for book_id in range(start, end + 1):
         book_url = f"https://tululu.org/txt.php"
         payload = {"id": book_id}
         try:
             book_info = get_book_info(book_id)
+            logger.info(f'book_id={start}. Получили book_info')
             download_txt(book_url, payload, f"{book_id}. {book_info.get('title')}")
+            logger.info(f'book_id={start}. Скачали книгу')
             download_image(book_info.get('image'))
+            logger.info(f'book_id={start}. Скачали изображение')
             print("Название:", book_info.get('title'))
             print("Автор:", book_info.get('author'))
         except requests.exceptions.HTTPError:
+            logger.debug(f'HTTP Error. Страницы с id={book_id} не существует.')
+            print(f'HTTP Error. Страницы с id={book_id} не существует.')
             continue
         except requests.exceptions.ConnectionError:
-            print("Потеряно соединение...")
+            logger.debug(f'Потеряно соединение...Текущая сессия: id={book_id}.')
+            print(f'Потеряно соединение...Текущая сессия: id={book_id}.')
 
 
 if __name__ == "__main__":
