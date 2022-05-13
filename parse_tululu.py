@@ -125,11 +125,11 @@ def main():
         end = start + 1
 
     for book_id in range(start, end + 1):
-        url = f"https://tululu.org/txt.php"
+        book_url = f"https://tululu.org/txt.php"
         payload = {"id": book_id}
         try:
             book_info = get_book_info(book_id)
-            download_txt(url, payload, f"{book_id}. {book_info.get('title')}")
+            download_txt(book_url, payload, f"{book_id}. {book_info.get('title')}")
             download_image(book_info.get('image'))
             print("Название:", book_info.get('title'))
             print("Автор:", book_info.get('author'))
