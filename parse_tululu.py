@@ -23,7 +23,7 @@ def check_for_redirect(response: requests.models.Response) -> None:
         raise requests.HTTPError
 
 
-def download_txt(url: str, filename: str, folder: str = 'books/') -> str:
+def download_txt(url: str, payload: dict, filename: str, folder: str = 'books/') -> str:
     """Функция для скачивания текстовых файлов.
     Args:
         url (str): Cсылка на текст, который хочется скачать.
@@ -37,7 +37,9 @@ def download_txt(url: str, filename: str, folder: str = 'books/') -> str:
     path_to_download = os.path.join(folder, filename)
     Path(folder).mkdir(parents=True, exist_ok=True)
 
-    response = get_request(url)
+    response = requests.get(url, params=payload)
+    check_for_redirect(response)
+    response.raise_for_status()
 
     with open(f"{path_to_download}.txt", 'wb') as file:
         file.write(response.content)
@@ -59,7 +61,9 @@ def download_image(url: str, folder: str = 'images/') -> str:
     path_to_download = os.path.join(folder, str(filename))
     Path(folder).mkdir(parents=True, exist_ok=True)
 
-    response = get_request(url)
+    response = requests.get(url)
+    check_for_redirect(response)
+    response.raise_for_status()
 
     with open(f"{path_to_download}{file_extension}", 'wb') as file:
         file.write(response.content)
@@ -97,7 +101,11 @@ def parse_book_page(content) -> dict:
 def get_book_info(book_id: int) -> dict:
     """Парсим страницу книги и вовзращаем словарь с данными о книге"""
     url = f'https://tululu.org/b{book_id}/'
-    response = get_request(url)
+
+    response = requests.get(url)
+    check_for_redirect(response)
+    response.raise_for_status()
+
     soup = BeautifulSoup(response.text, 'lxml')
     return parse_book_page(soup)
 
@@ -117,10 +125,11 @@ def main():
         end = start + 1
 
     for book_id in range(start, end + 1):
-        url = f"https://tululu.org/txt.php?id={book_id}"
+        url = f"https://tululu.org/txt.php"
+        payload = {"id": book_id}
         try:
             book_info = get_book_info(book_id)
-            download_txt(url, f"{book_id}. {book_info.get('title')}")
+            download_txt(url, payload, f"{book_id}. {book_info.get('title')}")
             download_image(book_info.get('image'))
             print("Название:", book_info.get('title'))
             print("Автор:", book_info.get('author'))
