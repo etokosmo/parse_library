@@ -66,10 +66,11 @@ def download_image(url: str, folder: str = 'images/') -> str:
     check_for_redirect(response)
     response.raise_for_status()
 
-    with open(f"{path_to_download}{file_extension}", 'wb') as file:
+    full_path_to_download = f"{path_to_download}{file_extension}"
+    with open(full_path_to_download, 'wb') as file:
         file.write(response.content)
 
-    return f"{path_to_download}.txt"
+    return full_path_to_download
 
 
 def parse_book_page(content) -> dict:
