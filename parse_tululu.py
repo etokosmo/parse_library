@@ -23,7 +23,7 @@ def check_for_redirect(response: requests.models.Response) -> None:
         raise requests.HTTPError
 
 
-def download_txt(url: str, payload: dict, filename: str, folder: str = 'books/') -> str:
+def download_txt(url: str, params: dict, filename: str, folder: str = 'books/') -> str:
     """Функция для скачивания текстовых файлов.
     Args:
         url (str): Cсылка на текст, который хочется скачать.
@@ -37,14 +37,15 @@ def download_txt(url: str, payload: dict, filename: str, folder: str = 'books/')
     path_to_download = os.path.join(folder, filename)
     Path(folder).mkdir(parents=True, exist_ok=True)
 
-    response = requests.get(url, params=payload)
+    response = requests.get(url, params=params)
     check_for_redirect(response)
     response.raise_for_status()
 
-    with open(f"{path_to_download}.txt", 'wb') as file:
+    full_path_to_download = f"{path_to_download}.txt"
+    with open(full_path_to_download, 'wb') as file:
         file.write(response.content)
 
-    return f"{path_to_download}.txt"
+    return full_path_to_download
 
 
 def get_filename_and_file_extension(url: str) -> Tuple[str, str]:
