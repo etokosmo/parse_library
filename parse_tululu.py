@@ -109,6 +109,7 @@ def get_book_info(book_id: int) -> dict:
 
 def main():
     logger.add(PATH_TO_LOGS, level='DEBUG')
+
     parser = argparse.ArgumentParser(
         description='Скрипт для скачивания книг'
     )
@@ -116,6 +117,7 @@ def main():
     parser.add_argument('--end_id', help='На какой странице закончить скачивание', type=int, default=2)
     args = parser.parse_args()
     logger.info(f'Прием аргументов: start_id={args.start_id}, end_id={args.end_id}')
+
     start = args.start_id
     if start < 1:
         start = 1
@@ -123,6 +125,7 @@ def main():
     if end <= start:
         end = start + 1
     logger.info(f'Аргументы после обработки: start_id={start}, end_id={end}')
+
     for book_id in range(start, end + 1):
         book_url = f"https://tululu.org/txt.php"
         payload = {"id": book_id}
