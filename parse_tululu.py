@@ -136,8 +136,6 @@ def main():
             logger.info(f'book_id={book_id}. Скачали книгу')
             download_image(book_info.get('image'))
             logger.info(f'book_id={book_id}. Скачали изображение')
-            print("Название:", book_info.get('title'))
-            print("Автор:", book_info.get('author'))
         except requests.exceptions.HTTPError:
             logger.debug(f'HTTP Error. Страницы с id={book_id} не существует.')
             print(f'HTTP Error. Страницы с id={book_id} не существует.')
