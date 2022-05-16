@@ -130,11 +130,11 @@ def main():
         book_url = f"https://tululu.org/txt.php"
         payload = {"id": book_id}
         try:
-            book_info = get_book_info(book_id)
+            book = get_book_info(book_id)
             logger.info(f'book_id={book_id}. Получили book_info')
-            download_txt(book_url, payload, f"{book_id}. {book_info.get('title')}")
+            download_txt(book_url, payload, f"{book_id}. {book.get('title')}")
             logger.info(f'book_id={book_id}. Скачали книгу')
-            download_image(book_info.get('image'))
+            download_image(book.get('image'))
             logger.info(f'book_id={book_id}. Скачали изображение')
         except requests.exceptions.HTTPError:
             logger.debug(f'HTTP Error. Страницы с id={book_id} не существует.')
