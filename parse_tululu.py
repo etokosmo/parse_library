@@ -95,7 +95,7 @@ def parse_book_page(content, url: str) -> dict:
 
 
 @retry(requests.exceptions.ConnectionError, tries=3, delay=10)
-def get_book_info(book_id: int) -> dict:
+def get_book(book_id: int) -> dict:
     """Парсим страницу книги и возвращаем словарь с данными о книге"""
     url = f'https://tululu.org/b{book_id}/'
 
@@ -130,7 +130,7 @@ def main():
         book_url = f"https://tululu.org/txt.php"
         payload = {"id": book_id}
         try:
-            book = get_book_info(book_id)
+            book = get_book(book_id)
             logger.info(f'book_id={book_id}. Получили book_info')
             download_txt(book_url, payload, f"{book_id}. {book.get('title')}")
             logger.info(f'book_id={book_id}. Скачали книгу')
