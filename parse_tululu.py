@@ -59,7 +59,7 @@ def get_filename_and_file_extension(url: str) -> Tuple[str, str]:
 def download_image(url: str, folder: str = 'images/') -> str:
     """Функция для скачивания изображений"""
     filename, file_extension = get_filename_and_file_extension(url)
-    path_to_download = os.path.join(folder, str(filename))
+    path_to_download = os.path.join(folder, filename)
     Path(folder).mkdir(parents=True, exist_ok=True)
 
     response = requests.get(url)
