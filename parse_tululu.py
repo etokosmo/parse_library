@@ -82,7 +82,7 @@ def parse_book_page(content, url: str) -> dict:
     all_genres = [genre.text for genre in content.find('span', class_='d_book').find_all('a')]
 
     book_image = content.find('div', class_='bookimage').find('img')['src']
-    book_image = urljoin(url, f"../{book_image}")
+    book_image = urljoin(url, f"{book_image}")
 
     book_info = {
         'title': book_title,
@@ -126,7 +126,7 @@ def main():
         end = start + 1
     logger.info(f'Аргументы после обработки: start_id={start}, end_id={end}')
 
-    for book_id in range(start, end + 1):
+    for book_id in range(start, end):
         book_url = f"https://tululu.org/txt.php"
         payload = {"id": book_id}
         try:
