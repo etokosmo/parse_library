@@ -138,11 +138,8 @@ def main():
             logger.info(f'book_id={book_id}. Скачали изображение')
         except requests.exceptions.HTTPError:
             logger.debug(f'HTTP Error. Страницы с id={book_id} не существует.')
-            print(f'HTTP Error. Страницы с id={book_id} не существует.')
-            continue
         except requests.exceptions.ConnectionError:
             logger.debug(f'Потеряно соединение...Текущая сессия: id={book_id}.')
-            print(f'Потеряно соединение...Текущая сессия: id={book_id}.')
 
 
 if __name__ == "__main__":
