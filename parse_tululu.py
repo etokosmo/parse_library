@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 from pathlib import Path
 from typing import Tuple
 from urllib.parse import urljoin, urlsplit, unquote_plus
@@ -21,22 +22,26 @@ def check_for_redirect(response: requests.models.Response) -> None:
 
 
 @retry(requests.exceptions.ConnectionError, tries=3, delay=10)
-def download_txt(url: str, params: dict, filename: str, folder: str = 'books/') -> str:
+def download_txt(url: str, filename: str, folder: str = 'books/') -> str:
     """Функция для скачивания текстовых файлов.
     Args:
         url (str): Cсылка на текст, который хочется скачать.
-        params (dict): Параметры для GET запроса.
         filename (str): Имя файла, с которым сохранять.
         folder (str): Папка, куда сохранять.
     Returns:
         str: Путь до файла, куда сохранён текст.
     """
+    pattern_to_find_id = r'\d+'
+    book_id = re.search(pattern_to_find_id, url).group()
+    book_url_download = f"https://tululu.org/txt.php"
+    payload = {"id": book_id}
+
     if not is_valid_filename(filename):
         filename = sanitize_filename(filename)
     path_to_download = os.path.join(folder, filename)
     Path(folder).mkdir(parents=True, exist_ok=True)
 
-    response = requests.get(url, params=params)
+    response = requests.get(book_url_download, params=payload)
     check_for_redirect(response)
     response.raise_for_status()
 
@@ -74,7 +79,8 @@ def download_image(url: str, folder: str = 'images/') -> str:
 
 
 def parse_book_page(content, url: str) -> dict:
-    """Возвращаем словарь с данными о книге: название, автор, ссылка на фото, список комментариев, список жанров"""
+    """Возвращаем словарь с данными о книгах:
+    название, автор, ссылка на фото, список комментариев, список жанров, ссылка на книгу"""
     title_tag = content.find('h1')
     book_title, book_author = [text.strip() for text in title_tag.text.strip().split("::")]
 
@@ -89,15 +95,17 @@ def parse_book_page(content, url: str) -> dict:
         'author': book_author,
         'image': book_image,
         'genres': all_genres,
-        'comments': all_comments
+        'comments': all_comments,
+        'book_url': url
     }
     return book_info
 
 
 @retry(requests.exceptions.ConnectionError, tries=3, delay=10)
-def get_book(book_id: int) -> dict:
+def get_book(book_id: int = 1, url: str | None = None) -> dict:
     """Парсим страницу книги и возвращаем словарь с данными о книге"""
-    url = f'https://tululu.org/b{book_id}/'
+    if not url:
+        url = f'https://tululu.org/b{book_id}/'
 
     response = requests.get(url)
     check_for_redirect(response)
@@ -127,12 +135,10 @@ def main():
     logger.info(f'Аргументы после обработки: start_id={start}, end_id={end}')
 
     for book_id in range(start, end):
-        book_url = f"https://tululu.org/txt.php"
-        payload = {"id": book_id}
         try:
             book = get_book(book_id)
             logger.info(f'book_id={book_id}. Получили book_info')
-            download_txt(book_url, payload, f"{book_id}. {book.get('title')}")
+            download_txt(book.get('book_url'), f"{book_id}. {book.get('title')}")
             logger.info(f'book_id={book_id}. Скачали книгу')
             download_image(book.get('image'))
             logger.info(f'book_id={book_id}. Скачали изображение')
