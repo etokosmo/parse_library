@@ -42,8 +42,12 @@ def get_books_of_category(category: str, count_page: int = 1) -> list[dict]:
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, 'lxml')
-        for book_page in soup.find_all('table', class_='d_book'):
-            book_number = book_page.find('a')['href']
+        book_selector = "table.d_book div.bookimage a"
+        book_pages = soup.select(book_selector)
+
+        for book_page in book_pages:
+            logger.info(f'book_page={book_page}')
+            book_number = book_page['href']
             pattern_to_find_id = r'\d+'
             book_id = re.search(pattern_to_find_id, book_number).group()
             book_link = urljoin(url, book_number)
