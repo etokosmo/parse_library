@@ -121,8 +121,8 @@ def main():
     parser = argparse.ArgumentParser(
         description='Скрипт для скачивания книг'
     )
-    parser.add_argument('--start_id', help='С какой страницы начать скачивание', type=int, default=1)
-    parser.add_argument('--end_id', help='На какой странице закончить скачивание', type=int, default=2)
+    parser.add_argument('--start_id', help='С какого id книги начать скачивание', type=int, default=1)
+    parser.add_argument('--end_id', help='На каком id книги закончить скачивание', type=int, default=2)
     args = parser.parse_args()
     logger.info(f'Прием аргументов: start_id={args.start_id}, end_id={args.end_id}')
 
