@@ -96,10 +96,8 @@ def get_books_of_category(category: str, parseargs: ParseArgs) -> list[dict]:
                 logger.debug(f'HTTP Error. book_id={book_id} - Нельзя скачать кингу.')
             except requests.exceptions.ConnectionError:
                 logger.debug(f'Потеряно соединение...Текущая сессия: book_id={book_id}.')
-    if parseargs.json_path:
-        make_json(books, folder=parseargs.json_path)
-    else:
-        make_json(books, folder=parseargs.dest_folder)
+
+    make_json(books, folder=parseargs.json_path if parseargs.json_path else parseargs.dest_folder)
     return books
 
 
