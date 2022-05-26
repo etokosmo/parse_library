@@ -103,12 +103,12 @@ def get_books_of_category(category: str, parseargs: ParseArgs) -> list[dict]:
     return books
 
 
-def get_arguments():
+def get_arguments(category: str):
     """Принимает аргументы из консоли"""
     parser = argparse.ArgumentParser(description='Скрипт для скачивания книг')
     parser.add_argument('--start_page', help='С какой страницы начать скачивание', type=int, default=1)
     parser.add_argument('--end_page', help='На какой странице закончить скачивание', type=int,
-                        default=get_last_page(BOOK_CATEGORY) + 1)
+                        default=get_last_page(category) + 1)
     parser.add_argument('--dest_folder', help='Путь к каталогу с результатами парсинга: картинкам, книгам, JSON',
                         default='')
     parser.add_argument('--skip_imgs', action='store_true', help='Не скачивать картинки')
@@ -146,7 +146,7 @@ def process_args(arguments) -> ParseArgs:
 def main():
     logger.add(PATH_TO_LOGS, level='DEBUG')
 
-    args = get_arguments()
+    args = get_arguments(BOOK_CATEGORY)
     logger.info(
         f'Прием аргументов: start_id={args.start_page}, end_id={args.end_page}, dest_folder={args.dest_folder}, \
         skip_imgs={args.skip_imgs}, skip_txt={args.skip_txt}, json_path={args.json_path}')
