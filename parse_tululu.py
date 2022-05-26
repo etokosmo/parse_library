@@ -81,13 +81,13 @@ def download_image(url: str, folder: str = 'images/') -> str:
 def parse_book_page(content, url: str) -> dict:
     """Возвращаем словарь с данными о книгах:
     название, автор, ссылка на фото, список комментариев, список жанров, ссылка на книгу"""
-    title_tag = content.find('h1')
+    title_tag = content.select_one('h1')
     book_title, book_author = [text.strip() for text in title_tag.text.strip().split("::")]
 
-    all_comments = [comment.find('span').text for comment in content.find_all('div', class_='texts')]
-    all_genres = [genre.text for genre in content.find('span', class_='d_book').find_all('a')]
+    all_comments = [comment.select_one('span').text for comment in content.select('div.texts')]
+    all_genres = [genre.text for genre in content.select('span.d_book a')]
 
-    book_image = content.find('div', class_='bookimage').find('img')['src']
+    book_image = content.select_one('div.bookimage img')['src']
     book_image = urljoin(url, f"{book_image}")
 
     book_info = {
