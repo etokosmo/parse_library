@@ -42,8 +42,8 @@ def get_last_page(category: str) -> int:
     return int(last_page)
 
 
-def make_json(content: list[dict], filename: str = 'books.json', folder: str = '') -> None:
-    """Создаем JSON файл"""
+def save_json(content: list[dict], filename: str = 'books.json', folder: str = '') -> None:
+    """Сохраняем JSON файл"""
     path_to_download = os.path.join(folder, filename)
     Path(folder).mkdir(parents=True, exist_ok=True)
     with open(path_to_download, "w", encoding='utf8') as file:
@@ -97,7 +97,7 @@ def get_books_of_category(category: str, parseargs: ParseArgs) -> list[dict]:
             except requests.exceptions.ConnectionError:
                 logger.debug(f'Потеряно соединение...Текущая сессия: book_id={book_id}.')
 
-    make_json(books, folder=parseargs.json_path if parseargs.json_path else parseargs.dest_folder)
+    save_json(books, folder=parseargs.json_path if parseargs.json_path else parseargs.dest_folder)
     return books
 
 
