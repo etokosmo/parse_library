@@ -63,7 +63,7 @@ def get_book_pages(url) -> element.ResultSet:
 
 
 @retry(requests.exceptions.ConnectionError, tries=3, delay=10)
-def get_books_of_category(category: str, parseargs: ParseArgs) -> list[dict]:
+def get_books_of_category(category: str, book_id_pattern: str, parseargs: ParseArgs) -> list[dict]:
     """Возвращаем список словарей с данными о книгах:
     название, автор, ссылка на фото, список комментариев, список жанров, ссылка на книгу"""
     books = []
@@ -76,7 +76,7 @@ def get_books_of_category(category: str, parseargs: ParseArgs) -> list[dict]:
 
         for book_page in book_pages:
             book_number = book_page['href']
-            book_id = re.search(PATTERN_TO_FIND_BOOK_ID, book_number).group()
+            book_id = re.search(book_id_pattern, book_number).group()
             book_link = urljoin(url_category_page, book_number)
             logger.info(f'id={book_id}')
 
@@ -152,7 +152,7 @@ def main():
     parse_args = process_args(args)
 
     try:
-        get_books_of_category(BOOK_CATEGORY, parse_args)
+        get_books_of_category(BOOK_CATEGORY, PATTERN_TO_FIND_BOOK_ID, parse_args)
         logger.info(f'category={BOOK_CATEGORY}. Получили книги со страниц по категории')
     except requests.exceptions.HTTPError:
         logger.debug(f'HTTP Error. category={BOOK_CATEGORY} - Нет страницы с такой категорией.')
