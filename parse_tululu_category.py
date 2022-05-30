@@ -63,39 +63,37 @@ def get_book_pages(url) -> element.ResultSet:
 
 
 @retry(requests.exceptions.ConnectionError, tries=3, delay=10)
-def get_books_of_category(category: str, book_id_pattern: str, parseargs: ParseArgs) -> list[dict]:
+def get_books_of_category(book_pages: list,
+                          url_category_page: str,
+                          book_id_pattern: str,
+                          parseargs: ParseArgs) -> list[dict]:
     """Возвращаем список словарей с данными о книгах:
     название, автор, ссылка на фото, список комментариев, список жанров, ссылка на книгу"""
     books = []
     path_to_download_books = urljoin(parseargs.dest_folder, "books/")
     path_to_download_images = urljoin(parseargs.dest_folder, "images/")
+    for book_page in book_pages:
+        book_number = book_page['href']
+        book_id = re.search(book_id_pattern, book_number).group()
+        book_link = urljoin(url_category_page, book_number)
+        logger.info(f'id={book_id}')
 
-    for page in range(parseargs.start_page, parseargs.end_page):
-        url_category_page = f'https://tululu.org/{category}/{page}/'
-        book_pages = get_book_pages(url_category_page)
-
-        for book_page in book_pages:
-            book_number = book_page['href']
-            book_id = re.search(book_id_pattern, book_number).group()
-            book_link = urljoin(url_category_page, book_number)
-            logger.info(f'id={book_id}')
-
-            try:
-                book = get_book(url=book_link)
-                logger.info(f'url={book_link}. Получили book_info')
-                if not parseargs.skip_txt:
-                    download_txt(book.get('book_url'),
-                                 f"{book_id}. {book.get('title')}",
-                                 path_to_download_books)
-                    logger.info(f'url={book_link}. Скачали книгу')
-                if not parseargs.skip_imgs:
-                    download_image(book.get('image'), path_to_download_images)
-                    logger.info(f'url={book_link}. Скачали изображение')
-                books.append(book)
-            except requests.exceptions.HTTPError:
-                logger.debug(f'HTTP Error. book_id={book_id} - Нельзя скачать кингу.')
-            except requests.exceptions.ConnectionError:
-                logger.debug(f'Потеряно соединение...Текущая сессия: book_id={book_id}.')
+        try:
+            book = get_book(url=book_link)
+            logger.info(f'url={book_link}. Получили book_info')
+            if not parseargs.skip_txt:
+                download_txt(book.get('book_url'),
+                             f"{book_id}. {book.get('title')}",
+                             path_to_download_books)
+                logger.info(f'url={book_link}. Скачали книгу')
+            if not parseargs.skip_imgs:
+                download_image(book.get('image'), path_to_download_images)
+                logger.info(f'url={book_link}. Скачали изображение')
+            books.append(book)
+        except requests.exceptions.HTTPError:
+            logger.debug(f'HTTP Error. book_id={book_id} - Нельзя скачать кингу.')
+        except requests.exceptions.ConnectionError:
+            logger.debug(f'Потеряно соединение...Текущая сессия: book_id={book_id}.')
 
     save_json(books, folder=parseargs.json_path if parseargs.json_path else parseargs.dest_folder)
     return books
@@ -151,13 +149,16 @@ def main():
 
     parse_args = process_args(args)
 
-    try:
-        get_books_of_category(BOOK_CATEGORY, PATTERN_TO_FIND_BOOK_ID, parse_args)
-        logger.info(f'category={BOOK_CATEGORY}. Получили книги со страниц по категории')
-    except requests.exceptions.HTTPError:
-        logger.debug(f'HTTP Error. category={BOOK_CATEGORY} - Нет страницы с такой категорией.')
-    except requests.exceptions.ConnectionError:
-        logger.debug(f'Потеряно соединение...Текущая сессия: category={BOOK_CATEGORY}.')
+    for page in range(parse_args.start_page, parse_args.end_page):
+        url_category_page = f'https://tululu.org/{BOOK_CATEGORY}/{page}/'
+        try:
+            book_pages = get_book_pages(url_category_page)
+            get_books_of_category(book_pages, url_category_page, PATTERN_TO_FIND_BOOK_ID, parse_args)
+            logger.info(f'category={BOOK_CATEGORY}. Получили книги со страниц по категории')
+        except requests.exceptions.HTTPError:
+            logger.debug(f'HTTP Error. category={BOOK_CATEGORY} - Нет страницы page={page} с такой категорией.')
+        except requests.exceptions.ConnectionError:
+            logger.debug(f'Потеряно соединение...Текущая сессия: category={BOOK_CATEGORY}.')
 
 
 if __name__ == "__main__":
