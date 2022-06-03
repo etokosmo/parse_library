@@ -54,7 +54,8 @@ def download_txt(url: str, filename: str, folder: str = 'books/') -> str:
 
 def get_filename_and_file_extension(url: str) -> Tuple[str, str]:
     """Получаем название файла и расширение файла из ссылки"""
-    truncated_url = unquote_plus(urlsplit(url, scheme='', allow_fragments=True).path)
+    truncated_url = unquote_plus(
+        urlsplit(url, scheme='', allow_fragments=True).path)
     filename, file_extension = os.path.splitext(truncated_url)
     filename = filename.split("/")[-1]
     return filename, file_extension
@@ -80,11 +81,14 @@ def download_image(url: str, folder: str = 'images/') -> str:
 
 def parse_book_page(content, url: str) -> dict:
     """Возвращаем словарь с данными о книгах:
-    название, автор, ссылка на фото, список комментариев, список жанров, ссылка на книгу"""
+    название, автор, ссылка на фото, список комментариев, список жанров,
+    ссылка на книгу"""
     title_tag = content.select_one('h1')
-    book_title, book_author = [text.strip() for text in title_tag.text.strip().split("::")]
+    book_title, book_author = [text.strip() for text in
+                               title_tag.text.strip().split("::")]
 
-    all_comments = [comment.select_one('span').text for comment in content.select('div.texts')]
+    all_comments = [comment.select_one('span').text for comment in
+                    content.select('div.texts')]
     all_genres = [genre.text for genre in content.select('span.d_book a')]
 
     book_image = content.select_one('div.bookimage img')['src']
@@ -121,10 +125,20 @@ def main():
     parser = argparse.ArgumentParser(
         description='Скрипт для скачивания книг'
     )
-    parser.add_argument('--start_id', help='С какого id книги начать скачивание', type=int, default=1)
-    parser.add_argument('--end_id', help='На каком id книги закончить скачивание', type=int, default=2)
+    parser.add_argument(
+        '--start_id',
+        help='С какого id книги начать скачивание', type=int,
+        default=1
+    )
+    parser.add_argument(
+        '--end_id',
+        help='На каком id книги закончить скачивание',
+        type=int,
+        default=2
+    )
     args = parser.parse_args()
-    logger.info(f'Прием аргументов: start_id={args.start_id}, end_id={args.end_id}')
+    logger.info(
+        f'Прием аргументов: start_id={args.start_id}, end_id={args.end_id}')
 
     start = args.start_id
     if start < 1:
@@ -138,14 +152,16 @@ def main():
         try:
             book = get_book(book_id)
             logger.info(f'book_id={book_id}. Получили book_info')
-            download_txt(book.get('book_url'), f"{book_id}. {book.get('title')}")
+            download_txt(book.get('book_url'),
+                         f"{book_id}. {book.get('title')}")
             logger.info(f'book_id={book_id}. Скачали книгу')
             download_image(book.get('image'))
             logger.info(f'book_id={book_id}. Скачали изображение')
         except requests.exceptions.HTTPError:
             logger.debug(f'HTTP Error. Страницы с id={book_id} не существует.')
         except requests.exceptions.ConnectionError:
-            logger.debug(f'Потеряно соединение...Текущая сессия: id={book_id}.')
+            logger.debug(
+                f'Потеряно соединение...Текущая сессия: id={book_id}.')
 
 
 if __name__ == "__main__":

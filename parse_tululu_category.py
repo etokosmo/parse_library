@@ -11,7 +11,8 @@ from bs4 import BeautifulSoup, element
 from loguru import logger
 from retry import retry
 
-from parse_tululu import download_txt, download_image, get_book, check_for_redirect
+from parse_tululu import download_txt, download_image, get_book, \
+    check_for_redirect
 
 BASE_DIR = os.path.dirname(__file__) or '.'
 PATH_TO_LOGS = os.path.join(BASE_DIR, 'logs', 'logs.log')
@@ -42,7 +43,9 @@ def get_last_page(category: str) -> int:
     return int(last_page)
 
 
-def save_json(content: list[dict], filename: str = 'books.json', folder: str = '') -> None:
+def save_json(content: list[dict],
+              filename: str = 'books.json',
+              folder: str = '') -> None:
     """Сохраняем JSON файл"""
     path_to_download = os.path.join(folder, filename)
     Path(folder).mkdir(parents=True, exist_ok=True)
@@ -68,7 +71,8 @@ def get_books_of_category(book_pages: list,
                           book_id_pattern: str,
                           parseargs: ParseArgs) -> list[dict]:
     """Возвращаем список словарей с данными о книгах:
-    название, автор, ссылка на фото, список комментариев, список жанров, ссылка на книгу"""
+    название, автор, ссылка на фото, список комментариев, список жанров,
+    ссылка на книгу"""
     books = []
     path_to_download_books = urljoin(parseargs.dest_folder, "books/")
     path_to_download_images = urljoin(parseargs.dest_folder, "images/")
@@ -91,25 +95,53 @@ def get_books_of_category(book_pages: list,
                 logger.info(f'url={book_link}. Скачали изображение')
             books.append(book)
         except requests.exceptions.HTTPError:
-            logger.debug(f'HTTP Error. book_id={book_id} - Нельзя скачать кингу.')
+            logger.debug(
+                f'HTTP Error. book_id={book_id} - Нельзя скачать кингу.')
         except requests.exceptions.ConnectionError:
-            logger.debug(f'Потеряно соединение...Текущая сессия: book_id={book_id}.')
+            logger.debug(
+                f'Потеряно соединение...Текущая сессия: book_id={book_id}.')
 
-    save_json(books, folder=parseargs.json_path if parseargs.json_path else parseargs.dest_folder)
+    save_json(
+        books,
+        folder=parseargs.json_path if parseargs.json_path else parseargs.dest_folder
+    )
     return books
 
 
 def get_arguments(category: str):
     """Принимает аргументы из консоли"""
     parser = argparse.ArgumentParser(description='Скрипт для скачивания книг')
-    parser.add_argument('--start_page', help='С какой страницы начать скачивание', type=int, default=1)
-    parser.add_argument('--end_page', help='На какой странице закончить скачивание', type=int,
-                        default=get_last_page(category) + 1)
-    parser.add_argument('--dest_folder', help='Путь к каталогу с результатами парсинга: картинкам, книгам, JSON',
-                        default='')
-    parser.add_argument('--skip_imgs', action='store_true', help='Не скачивать картинки')
-    parser.add_argument('--skip_txt', action='store_true', help='Не скачивать книги')
-    parser.add_argument('--json_path', help='Указать свой путь к *.json файлу с результатами', default='')
+    parser.add_argument(
+        '--start_page',
+        help='С какой страницы начать скачивание', type=int,
+        default=1
+    )
+    parser.add_argument(
+        '--end_page',
+        help='На какой странице закончить скачивание',
+        type=int,
+        default=get_last_page(category) + 1
+    )
+    parser.add_argument(
+        '--dest_folder',
+        help='Путь к каталогу с результатами парсинга: картинкам,книгам,JSON',
+        default=''
+    )
+    parser.add_argument(
+        '--skip_imgs',
+        action='store_true',
+        help='Не скачивать картинки'
+    )
+    parser.add_argument(
+        '--skip_txt',
+        action='store_true',
+        help='Не скачивать книги'
+    )
+    parser.add_argument(
+        '--json_path',
+        help='Указать свой путь к *.json файлу с результатами',
+        default=''
+    )
     return parser.parse_args()
 
 
@@ -127,15 +159,17 @@ def process_args(arguments) -> ParseArgs:
         arguments.json_path += '/'
 
     logger.info(
-        f'Аргументы после обработки: start_id={start}, end_id={end}, dest_folder={arguments.dest_folder}, \
-        json_path={arguments.json_path}')
+        f'Аргументы после обработки: start_id={start}, end_id={end}, \
+        dest_folder={arguments.dest_folder}, json_path={arguments.json_path}')
 
-    args = ParseArgs(start_page=arguments.start_page,
-                     end_page=arguments.end_page,
-                     skip_imgs=arguments.skip_imgs,
-                     skip_txt=arguments.skip_txt,
-                     dest_folder=arguments.dest_folder,
-                     json_path=arguments.json_path)
+    args = ParseArgs(
+        start_page=arguments.start_page,
+        end_page=arguments.end_page,
+        skip_imgs=arguments.skip_imgs,
+        skip_txt=arguments.skip_txt,
+        dest_folder=arguments.dest_folder,
+        json_path=arguments.json_path
+    )
     return args
 
 
@@ -144,8 +178,10 @@ def main():
 
     args = get_arguments(BOOK_CATEGORY)
     logger.info(
-        f'Прием аргументов: start_id={args.start_page}, end_id={args.end_page}, dest_folder={args.dest_folder}, \
-        skip_imgs={args.skip_imgs}, skip_txt={args.skip_txt}, json_path={args.json_path}')
+        f'Прием аргументов: start_id={args.start_page}, \
+        end_id={args.end_page}, dest_folder={args.dest_folder}, \
+        skip_imgs={args.skip_imgs}, skip_txt={args.skip_txt}, \
+        json_path={args.json_path}')
 
     parse_args = process_args(args)
 
@@ -153,12 +189,18 @@ def main():
         url_category_page = f'https://tululu.org/{BOOK_CATEGORY}/{page}/'
         try:
             book_pages = get_book_pages(url_category_page)
-            get_books_of_category(book_pages, url_category_page, PATTERN_TO_FIND_BOOK_ID, parse_args)
-            logger.info(f'category={BOOK_CATEGORY}. Получили книги со страниц по категории')
+            get_books_of_category(book_pages, url_category_page,
+                                  PATTERN_TO_FIND_BOOK_ID, parse_args)
+            logger.info(f'category={BOOK_CATEGORY}. \
+            Получили книги со страниц по категории')
         except requests.exceptions.HTTPError:
-            logger.debug(f'HTTP Error. category={BOOK_CATEGORY} - Нет страницы page={page} с такой категорией.')
+            logger.debug(
+                f'HTTP Error. category={BOOK_CATEGORY} - \
+                Нет страницы page={page} с такой категорией.')
         except requests.exceptions.ConnectionError:
-            logger.debug(f'Потеряно соединение...Текущая сессия: category={BOOK_CATEGORY}.')
+            logger.debug(
+                f'Потеряно соединение...Текущая сессия: \
+                category={BOOK_CATEGORY}.')
 
 
 if __name__ == "__main__":
