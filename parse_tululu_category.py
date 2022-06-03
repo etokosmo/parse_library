@@ -86,12 +86,19 @@ def get_books_of_category(book_pages: list,
             book = get_book(url=book_link)
             logger.info(f'url={book_link}. Получили book_info')
             if not parseargs.skip_txt:
-                download_txt(book.get('book_url'),
-                             f"{book_id}. {book.get('title')}",
-                             path_to_download_books)
+                path_to_txt = download_txt(
+                    book.get('book_url'),
+                    f"{book_id}. {book.get('title')}",
+                    path_to_download_books
+                )
+                book['path_to_txt'] = path_to_txt
                 logger.info(f'url={book_link}. Скачали книгу')
             if not parseargs.skip_imgs:
-                download_image(book.get('image'), path_to_download_images)
+                path_to_img = download_image(
+                    book.get('image'),
+                    path_to_download_images
+                )
+                book['path_to_img'] = path_to_img
                 logger.info(f'url={book_link}. Скачали изображение')
             books.append(book)
         except requests.exceptions.HTTPError:

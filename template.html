@@ -15,29 +15,28 @@
 
 <body>
   {% for books in chunked_books %}
-    <div class="container">
-      <div class="row">
-        {% for book in books %}
-        <div class="col-6">
-          <div class="card mb-3 col-6" style="max-width: 540px;">
-            <div class="row no-gutters">
-              <div class="col-md-4">
-                <img src="{{ book.image }}" class="card-img" alt="Обложка для {{ book.title }}">
-              </div>
-              <div class="col-md-8">
-                <div class="card-body">
-                  <h5 class="card-title">{{ book.title }}</h5>
-                  <p class="card-text">{{ book.author }}</p>
-                  <p class="card-text"><small class="text-muted">Last updated 3
-                      mins ago</small></p>
-                </div>
+  <div class="container">
+    <div class="row">
+      {% for book in books %}
+      <div class="col-6">
+        <div class="card mb-3 col-6" style="max-width: 540px;">
+          <div class="row no-gutters">
+            <div class="col-md-4">
+              <img src="{{ book.path_to_img|urlencode }}" class="card-img" alt="Обложка для {{ book.title }}">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <p class="card-text">{{ book.author }}</p>
+                <a><p class="card-text"><a href="{{ book.path_to_txt|urlencode }}" target="_blank"><small class="text-muted">Читать</small></a></p>
               </div>
             </div>
           </div>
         </div>
-        {% endfor %}
       </div>
+      {% endfor %}
     </div>
+  </div>
   {% endfor %}
 
   <!-- Optional JavaScript; choose one of the two! -->
