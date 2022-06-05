@@ -107,11 +107,6 @@ def get_books_of_category(book_pages: list,
         except requests.exceptions.ConnectionError:
             logger.debug(
                 f'Потеряно соединение...Текущая сессия: book_id={book_id}.')
-
-    save_json(
-        books,
-        folder=parseargs.json_path if parseargs.json_path else parseargs.dest_folder
-    )
     return books
 
 
@@ -191,13 +186,17 @@ def main():
         json_path={args.json_path}')
 
     parse_args = process_args(args)
-
+    books = []
     for page in range(parse_args.start_page, parse_args.end_page):
         url_category_page = f'https://tululu.org/{BOOK_CATEGORY}/{page}/'
         try:
             book_pages = get_book_pages(url_category_page)
-            get_books_of_category(book_pages, url_category_page,
-                                  PATTERN_TO_FIND_BOOK_ID, parse_args)
+            books.extend(get_books_of_category(
+                book_pages,
+                url_category_page,
+                PATTERN_TO_FIND_BOOK_ID,
+                parse_args))
+
             logger.info(f'category={BOOK_CATEGORY}. \
             Получили книги со страниц по категории')
         except requests.exceptions.HTTPError:
@@ -208,6 +207,10 @@ def main():
             logger.debug(
                 f'Потеряно соединение...Текущая сессия: \
                 category={BOOK_CATEGORY}.')
+    save_json(
+        books,
+        folder=parse_args.json_path if parse_args.json_path else parse_args.dest_folder
+    )
 
 
 if __name__ == "__main__":

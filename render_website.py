@@ -23,11 +23,13 @@ def on_reload():
     template = env.get_template('template.html')
 
     Path(PAGE_PATH).mkdir(parents=True, exist_ok=True)
+    count_of_pages = len(books_on_page)
     for number, books in enumerate(books_on_page, start=1):
         chunked_books = list(chunked(books, 2))
-        print(chunked_books)
         rendered_page = template.render(
             chunked_books=chunked_books,
+            count_of_pages=count_of_pages,
+            current_page=number,
         )
 
         with open(f'{PAGE_PATH}/index{number}.html', 'w',
