@@ -1,11 +1,13 @@
 import json
+import os
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from livereload import Server
 from more_itertools import chunked
 
-PAGE_PATH = './pages'
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+PAGE_PATH = os.path.join(BASE_DIR, 'pages')
 
 
 def on_reload():
@@ -13,14 +15,13 @@ def on_reload():
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html', 'xml'])
     )
+    template = env.get_template('template.html')
 
     with open("books.json", "r", encoding="utf8") as file_with_books:
         books_json = file_with_books.read()
 
     books = json.loads(books_json)
     books_on_page = list(chunked(books, 10))
-
-    template = env.get_template('template.html')
 
     Path(PAGE_PATH).mkdir(parents=True, exist_ok=True)
     count_of_pages = len(books_on_page)
@@ -35,12 +36,18 @@ def on_reload():
         with open(f'{PAGE_PATH}/index{number}.html', 'w',
                   encoding="utf8") as file:
             file.write(rendered_page)
+        if number == 1:
+            with open('index.html', 'w', encoding="utf8") as file:
+                file.write(rendered_page)
 
 
-on_reload()
+def main():
+    on_reload()
 
-server = Server()
+    server = Server()
+    server.watch('template.html', on_reload)
+    server.serve(root='.')
 
-server.watch('template.html', on_reload)
 
-server.serve(root='.')
+if __name__ == "__main__":
+    main()

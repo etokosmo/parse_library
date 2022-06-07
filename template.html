@@ -19,19 +19,19 @@
         {% if current_page == 1 %}
           <li class="page-item disabled"><a class="page-link" href="">Назад</a></li>
         {% else %}
-          <li class="page-item"><a class="page-link" href="index{{current_page-1}}.html">Назад</a></li>
+          <li class="page-item"><a class="page-link" href="../pages/index{{current_page-1}}.html">Назад</a></li>
         {% endif %}
         {% for page in range(1, count_of_pages+1) %}
           {% if current_page == page %}
-            <li class="page-item active"><a class="page-link" href="index{{page}}.html">{{ page }}</a></li>
+            <li class="page-item active"><a class="page-link" href="../pages/index{{page}}.html">{{ page }}</a></li>
           {% else %}
-            <li class="page-item"><a class="page-link" href="index{{page}}.html">{{ page }}</a></li>
+            <li class="page-item"><a class="page-link" href="../pages/index{{page}}.html">{{ page }}</a></li>
           {% endif %}
         {% endfor %}
         {% if current_page == count_of_pages %}
           <li class="page-item disabled"><a class="page-link" href="">Вперёд</a></li>
         {% else %}
-          <li class="page-item"><a class="page-link" href="index{{current_page+1}}.html">Вперёд</a></li>
+          <li class="page-item"><a class="page-link" href="../pages/index{{current_page+1}}.html">Вперёд</a></li>
         {% endif %}
         
       </ul>
@@ -45,7 +45,7 @@
         <div class="card mb-3 col-6" style="max-width: 540px;">
           <div class="row no-gutters">
             <div class="col-md-4">
-              <img src="../{{ book.path_to_img|urlencode }}" class="card-img" alt="Обложка для {{ book.title }}">
+              <img src="../{{ book.path_to_img|urlencode }}" class="card-img" alt="Обложка для {{ book.title }}" style="max-height: 240px; padding: 15px 2px;">
             </div>
             <div class="col-md-8">
               <div class="card-body">
