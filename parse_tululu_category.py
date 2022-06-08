@@ -127,7 +127,7 @@ def get_arguments(category: str):
     parser.add_argument(
         '--dest_folder',
         help='Путь к каталогу с результатами парсинга: картинкам,книгам,JSON',
-        default=''
+        default='media'
     )
     parser.add_argument(
         '--skip_imgs',
