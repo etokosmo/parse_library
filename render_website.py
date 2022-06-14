@@ -38,9 +38,8 @@ def on_reload(arguments: argparse.Namespace) -> None:
 
     with open(f"{arguments.json_path}/books.json", "r",
               encoding="utf8") as file_with_books:
-        books_json = file_with_books.read()
+        books = json.load(file_with_books)
 
-    books = json.loads(books_json)
     books_on_page = list(chunked(books, BOOKS_ON_PAGE))
 
     Path(PAGE_PATH).mkdir(parents=True, exist_ok=True)
