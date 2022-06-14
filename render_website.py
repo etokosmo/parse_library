@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-from dataclasses import dataclass
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -14,13 +13,7 @@ BOOKS_ON_PAGE = 10
 BOOKS_ON_ROW = 2
 
 
-@dataclass
-class ParseArgs:
-    media_folder: str
-    json_path: str
-
-
-def get_arguments() -> ParseArgs:
+def get_arguments() -> argparse.Namespace:
     """Принимает аргументы из консоли"""
     parser = argparse.ArgumentParser(description='Верстка библиотеки')
     parser.add_argument(
@@ -33,15 +26,10 @@ def get_arguments() -> ParseArgs:
         help='Указать свой путь к *.json файлу с результатами',
         default='media'
     )
-    args = parser.parse_args()
-    parse_args = ParseArgs(
-        media_folder=args.media_folder,
-        json_path=args.json_path
-    )
-    return parse_args
+    return parser.parse_args()
 
 
-def on_reload(arguments: ParseArgs):
+def on_reload(arguments: argparse.Namespace) -> None:
     env = Environment(
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html', 'xml'])
