@@ -55,8 +55,7 @@
                 {% for genre in book.genres %}
                   <span class="badge badge-light">{{ genre }}</span>
                 {% endfor %}
-                <p class="card-text"><a href="../{{ book.path_to_txt|urlencode }}" target="_blank"><small
-                      class="text-muted">Читать</small></a></p>
+                <p class="card-text" style="padding-top: 7px;"><a href="../{{ book.path_to_txt|urlencode }}" target="_blank">Читать</a></p>
               </div>
             </div>
           </div>
