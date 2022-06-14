@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+from functools import partial
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -59,10 +60,10 @@ def on_reload(arguments: argparse.Namespace) -> None:
 
 def main():
     args = get_arguments()
-    on_reload(args)
-
+    on_reload_partial = partial(on_reload, args)
+    on_reload_partial()
     server = Server()
-    server.watch('template.html', on_reload)
+    server.watch('template.html', on_reload_partial)
     server.serve(root='.')
 
 
